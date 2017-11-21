@@ -1,0 +1,60 @@
+import serial
+import os
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+from gi.repository import GLib
+
+class Base(Gtk.Window):
+    def __init__(self):
+        Gtk.Window.__init__(self, title="Serial Connection Test")
+        self.set_border_width(10)
+        self.set_default_size(300,45)
+
+        box = Gtk.Box(spacing=6)
+        box.set_homogeneous(False)
+
+
+        self.add(box)
+
+        vbox_left = Gtk.Box(spacing=6)
+        vbox_left.set_homogeneous(False)
+        box.pack_start(vbox_left, True, True, 0)
+        vbox_right = Gtk.Box(spacing=6)
+        vbox_right.set_homogeneous(False)
+        box.pack_start(vbox_right, True, True, 0)
+
+
+        self.conbutton = Gtk.Button.new_with_label("Connect")
+        self.conbutton.connect("clicked", self.connect_serial)
+        vbox_left.pack_start(self.conbutton, True, True, 0)
+
+        self.label = Gtk.Label()
+
+        vbox_right.pack_start(self.label, True, True, 0)
+
+        GLib.timeout_add(1000, self.ttycheck)
+
+    def ttycheck(self):
+        if(os.path.exists("/dev/ttyUSB0")):
+            self.label.set_label("Nano Connected")
+            self.conbutton.set_sensitive(True)
+        else:
+            self.label.set_label("Nano Disconnected")
+            self.conbutton.set_sensitive(False)
+        return True
+
+    def connect_serial(self, button):
+        self.label.set_label("Clicked")
+        ser = serial.Serial()
+        ser.baudrate = 9600
+
+
+win = Base()
+win.connect("delete-event", Gtk.main_quit)
+win.set_position(Gtk.WindowPosition.CENTER)
+win.show_all()
+Gtk.main()
+
+
+
